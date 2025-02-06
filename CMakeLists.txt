@@ -22,6 +22,6 @@ if (X11_FOUND)
 
   include_directories(${PROJECT_NAME} PRIVATE ${X11_INCLUDE_DIR})
   # If XTest.h is needed, add Xtst below
-  target_link_libraries(${PROJECT_NAME} PRIVATE ${X11_LIBRARIES})
+  target_link_libraries(${PROJECT_NAME} PRIVATE ${X11_LIBRARIES} Xtst)
 endif ()
 

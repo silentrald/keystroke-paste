@@ -7,8 +7,9 @@
 
 #include "../key.hpp"
 
+#include <X11/X.h>
 #include <X11/Xlib.h>
-// #include <X11/extensions/XTest.h>
+#include <X11/extensions/XTest.h>
 #include <cstdio>
 #include <cstring>
 #include <unistd.h>
@@ -30,13 +31,13 @@ void send_key_event(
   XFlush(display);
 }
 
-// void send_key_event_test(
-//     Display* display, KeyCode keycode, bool is_pressed
-// ) noexcept {
-//   XTestFakeKeyEvent(display, keycode, is_pressed, CurrentTime);
-//   XSync(display, false);
-//   XFlush(display);
-// }
+void send_key_event_test(
+    Display* display, KeyCode keycode, bool is_pressed
+) noexcept {
+  XTestFakeKeyEvent(display, keycode, is_pressed, CurrentTime);
+  XSync(display, false);
+  XFlush(display);
+}
 
 void key::input_text(const Data& data, const c8* text) noexcept {
   ul32 window = 0;
@@ -45,11 +46,21 @@ void key::input_text(const Data& data, const c8* text) noexcept {
 
   u32 i = 0U;
   KeyCode keycode = 0U;
+  XModifierKeymap* modifiers = XGetModifierMapping(data.display);
+  KeyCode shift = modifiers->modifiermap[ShiftMask];
   for (c8 c = text[i]; c != '\0'; c = text[++i]) {
     keycode = XKeysymToKeycode(data.display, (KeySym)c);
-    send_key_event(data.display, window, keycode, true);
+    // Shift
+    send_key_event_test(data.display, shift, c >= 'A' && c <= 'Z');
+
+    // send_key_event(data.display, window, keycode, true);
+    send_key_event_test(data.display, keycode, true);
     usleep(10'000); // 0.01 second sleep
+    send_key_event_test(data.display, keycode, false);
   }
+
+  // Shift Release
+  send_key_event_test(data.display, shift, false);
 }
 
 #endif
